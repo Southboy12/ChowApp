@@ -2,7 +2,7 @@ import { StyleSheet, View, TouchableOpacity, ScrollView} from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Snackbar, Switch, Text, PaperProvider, Portal, Dialog, Button } from 'react-native-paper'
-import EvilIcons from '@expo/vector-icons/EvilIcons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 
 
@@ -57,7 +57,7 @@ export default function Index() {
     ScreenToRender = <Rejected />
   }
 
-  const orderStatuses = ["New (0)", "Accepted by me (0)", "All ongoing (0)", "Awaiting pickup (0)", "In transit (0)", "Completed (0)", "Rejected (0)"]
+  const orderStatuses = ["Meals", "Chowsmart New", "Option Groups", "Option Items", "Packs"]
   return (
     
       <SafeAreaView style={styles.container}>
@@ -65,22 +65,16 @@ export default function Index() {
         <View style={styles.header}>
           <View>
             <Text variant="headlineLarge" style={{ fontWeight: "bold" }}>
-              Orders
+              Menu
             </Text>
           </View>
           <View style={styles.head}>
-            <Text variant="headlineSmall" style={styles.closedText}>
-             { isStoreOpen ? "Open" : "Closed"}
-            </Text>
-            <Switch value={isStoreOpen} onValueChange={handleToggle} color="#0c513f" />
+            <FontAwesome name="search" size={24} color="black" />
           </View>
         </View>
 
         {/* Scrollable Tab */}
         <View style={styles.scrollContainer}>
-          <TouchableOpacity style={styles.searchButton}>
-            <EvilIcons name="search" size={25} color="#fff" />
-          </TouchableOpacity>
 
           {/* Order Status */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -93,7 +87,7 @@ export default function Index() {
                     style={[styles.statusText, isActive && styles.activestatus]}
                     onPress={() => setActiveStatus(key)}
                   >
-                    <Text style={isActive && styles.activeText}>{s}</Text>
+                    <Text style={[isActive && styles.activeText, styles.text]}>{s}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -139,7 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 20
+    padding: 30
   },
   head: {
     flexDirection: "row",
@@ -151,9 +145,10 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 23,
+    paddingVertical: 8,
     backgroundColor: "#fff",
-    paddingHorizontal: 20
+    marginHorizontal: 30,
+    borderRadius: 8
   },
   searchButton: {
     padding: 10,
@@ -166,9 +161,9 @@ const styles = StyleSheet.create({
   },
   statusText: {
     marginHorizontal: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    fontSize: 16,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    fontSize: 30,
     borderRadius: 8
   },
   activestatus: {
@@ -179,6 +174,9 @@ const styles = StyleSheet.create({
     color: "#f5f5f5",
     fontWeight: "bold"
   }, 
+  text: {
+    fontSize: 16
+  },
   content: {
     flex: 1
   },
