@@ -15,6 +15,12 @@ import AwaitingPickup from '../screens/orders/AwaitingPickup';
 import InTransit from '../screens/orders/InTransit';
 import Completed from '../screens/orders/Completed';
 import Rejected from '../screens/orders/Rejected';
+import Meals from '../screens/Menu/Meals';
+import ChowsmartScreen from '../screens/Menu/Chowsmart';
+import GroupScreen from '../screens/Menu/Groups';
+import ItemsScreen from '../screens/Menu/Items';
+import PacksScreen from '../screens/Menu/Packs';
+
 
 
 
@@ -39,23 +45,17 @@ export default function Index() {
     setShowConfirm(false);
   };
 
-  if (!isStoreOpen) {
-    ScreenToRender = <StoreClosed />
-  } else if (isStoreOpen && activeStatus === 0) {
-    ScreenToRender = <New />
-  } else if (isStoreOpen && activeStatus === 1) {
-    ScreenToRender = <AcceptedByMe />
-  } else if (isStoreOpen && activeStatus === 2) {
-    ScreenToRender = <AllOngoing />
-  } else if (isStoreOpen && activeStatus === 3) {
-    ScreenToRender = <AwaitingPickup />
-  } else if (isStoreOpen && activeStatus === 4) {
-    ScreenToRender = <InTransit />
-  } else if (isStoreOpen && activeStatus === 5) {
-    ScreenToRender = <Completed />
-  } else if (isStoreOpen && activeStatus === 6) {
-    ScreenToRender = <Rejected />
-  }
+  if (activeStatus === 0) {
+    ScreenToRender = <Meals />
+    } else if (activeStatus === 1) {
+      ScreenToRender = <ChowsmartScreen />
+    } else if (activeStatus === 2) {
+      ScreenToRender = <GroupScreen />
+    } else if (activeStatus === 3) {
+      ScreenToRender = <ItemsScreen />
+    } else if (activeStatus === 4) {
+      ScreenToRender = <PacksScreen />
+    } 
 
   const orderStatuses = ["Meals", "Chowsmart New", "Option Groups", "Option Items", "Packs"]
   return (
@@ -81,7 +81,27 @@ export default function Index() {
             <View style={styles.statusContainer}>
               {orderStatuses.map((s, key) => {
                 const isActive = activeStatus === key;
+
+                if (s === "Chowsmart New") {
+                  return (
+                    <TouchableOpacity
+                    key={key}
+                    style={[styles.statusText, isActive && styles.activestatus]}
+                    onPress={() => setActiveStatus(key)}
+                  >
+                    <Text style={[isActive && styles.activeText, styles.text]}>
+                      Chowsmart 
+                      <View style={{backgroundColor: "red", paddingHorizontal: 8, borderRadius: 8, marginLeft: 8}}>
+                        <Text style={[{color: "#fff", alignSelf: "center"}, isActive && styles.activeText]}>
+                          New
+                        </Text>
+                      </View> 
+                    </Text>
+                  </TouchableOpacity>
+                  )
+                }
                 return (
+
                   <TouchableOpacity
                     key={key}
                     style={[styles.statusText, isActive && styles.activestatus]}

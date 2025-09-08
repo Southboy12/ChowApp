@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     padding: 10,
-    backgroundColor: "green",
+    backgroundColor: "#02C27F",
     borderRadius: 10,
   },
   statusContainer: {

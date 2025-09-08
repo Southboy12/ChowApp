@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider as PaperProvider, DefaultTheme, Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -31,7 +32,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-        
+      <GestureHandlerRootView>
         <SafeAreaProvider>
           <StatusBar backgroundColor="black" />
           {/* <SafeAreaView style={{ flex: 1, padding: 0}}> */}
@@ -60,18 +61,27 @@ export default function RootLayout() {
                }} 
               />
 
-               <Stack.Screen 
+              <Stack.Screen 
                 name="auth" 
                 options={{ 
                   headerShown: false,
-               }} 
+                }} 
+              />
+
+              <Stack.Screen 
+                name="screens/Menu/AddMeal" 
+                
+                options={{ 
+                  headerShown: false,
+                
+                }} 
               />
 
             </Stack>
           </RouteGuard>
           {/* </SafeAreaView> */}
         </SafeAreaProvider>
-     
+      </GestureHandlerRootView>
     </AuthProvider>
   )
 }
