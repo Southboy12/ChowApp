@@ -1,4 +1,5 @@
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { MealProvider } from "@/lib/meal-context";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "react-native";
@@ -35,7 +36,7 @@ export default function RootLayout() {
       <GestureHandlerRootView>
         <SafeAreaProvider>
           <StatusBar backgroundColor="black" />
-          {/* <SafeAreaView style={{ flex: 1, padding: 0}}> */}
+            <MealProvider>
           <RouteGuard>
             <Stack>
               <Stack.Screen
@@ -79,7 +80,7 @@ export default function RootLayout() {
 
             </Stack>
           </RouteGuard>
-          {/* </SafeAreaView> */}
+          </MealProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </AuthProvider>

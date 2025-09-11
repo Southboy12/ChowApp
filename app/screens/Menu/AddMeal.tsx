@@ -16,6 +16,7 @@ import CategoryDialog, {CategoryDialogProps} from '@/components/CategoryDialog';
 import PackDialog, { PackDialogProps } from '@/components/PackDialog';
 import CreateMealSnackbar from '@/components/CreateMealSnackbar';
 import { useTheme } from 'react-native-paper';
+import { useMeals } from '@/lib/meal-context';
 
 
 
@@ -36,8 +37,6 @@ const AddMeal = () => {
 
   const [dialogVisible, setDialogVisible] = useState<boolean>(false);
   const [packDialogVisible, setPackDialogVisible] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>("")
-  const [meals, setMeals] = useState<Meals[]>([])
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddPack, setShowAddPack] = useState(false);
   const [showAddOptionGroup, setShowAddOptionGroup] = useState(false);
@@ -57,12 +56,13 @@ const AddMeal = () => {
 
   // const inputRef = useRef<RNTextInput | null>(null)
   const { user } = useAuth()
+  const {createMeal, setError, error, meals, loading} = useMeals()
   const theme = useTheme()
 
 
 
   useEffect(() => {
-    fetchMeal()
+    
     const uniqueCategories = [...new Set(meals.map(meal => meal.category))]
     setCategories(uniqueCategories)
   },[user, meals])
@@ -73,42 +73,22 @@ const AddMeal = () => {
   const packs = [...new Set(meals.map(meal => meal.pack))]
   
 
-  const createMeal = async () => {
+  const handleCreateMeal = async () => {
 
-    if (!user) return;
     if (
-      !formData.category || 
-      !formData.mealName || 
-      !formData.description || 
-      !formData.price || 
-      !formData.priceDescription
+        !formData.category || 
+        !formData.mealName || 
+        !formData.description || 
+        !formData.price || 
+        !formData.priceDescription
     ) {
-      setError("Please fill all fields")
-      return;
+        setError("Please fill all fields")
+        return;
     }
 
     setError(null)
     try {
-      
-      await tablesDB.createRow(
-        
-        DATABASE_ID,
-        MEALS_ID,
-        ID.unique(),
-        {
-          user_id: user.$id,
-          category: formData.category,
-          meal_name: formData.mealName,
-          description: formData.description,
-          image: formData.image,
-          price: formData.price,
-          price_description: formData.priceDescription,
-          pack: formData.pack,
-          option_group: formData.optionGroup,
-          in_stock: formData.inStock
-        }
-      );
-      
+      createMeal(formData)
       setShowSnackbar(true)
       clearInputs()
 
@@ -122,20 +102,6 @@ const AddMeal = () => {
     }
   }
 
-  const fetchMeal = async () => {
-    try {
-      const response = await tablesDB.listRows(
-        DATABASE_ID,
-        MEALS_ID
-      )
-      
-      setMeals(response.rows as unknown as Meals[])
-
-    } catch (error) {
-      console.error(error);
-      
-    }
-  }
 
   const clearInputs = () => {
     setFormData((prev: FormData) => ({ 
@@ -373,11 +339,11 @@ const AddMeal = () => {
             buttonColor='#0c513f'
             labelStyle={{fontSize: 18, paddingVertical: 8}}
             style={styles.button}
-            onPress={createMeal}
+            onPress={handleCreateMeal}
           >
-            Add meal to menu
+            {loading ? "Loading..." : "Add menu"}
           </Button>
-          {error && <Text style={{ marginLeft: 30, color: theme.colors.error }}>{error}</Text> }
+          {error && <Text variant='titleMedium' style={{ color: theme.colors.error }}>{error}</Text> }
         </ScrollView>
 
         
