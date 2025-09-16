@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useMeals } from '@/lib/meal-context';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from 'react-native-paper';
+import FilterDialog from '@/components/FilterDialog';
 
 
 
@@ -16,25 +17,58 @@ const MealsScreen = () => {
   const [inStock, setInStock] = useState<boolean>(false)
   const [checked, setChecked] = useState<boolean>(false)
   const [checkedMeals, setCheckedMeals] = useState<string[]>([])
+  const [selectAll, setSelectAll] = useState<boolean>(false)
+  const [filterOptions, setFilterOptions] = useState<string>("All")
+  const [dialogVisible, setDialogVisible] = useState<boolean>(false)
+  
 
 
-  const {upsertMeal, fetchMeals, meals, setMeals} = useMeals()
+  const {upsertMeal, fetchMeals, meals} = useMeals()
+  const optionList = ["Select", 'All', "Out of Stock", "In Stock"]
 
   const router = useRouter()
   const { user } = useAuth()
-  const theme = useTheme()
 
-  const uniqueMeals = [...new Set(meals.map(meal => meal.category))]
+  const filteredMeals = meals.filter((meal) => {
+    if (filterOptions === "All") return true;
+    if (filterOptions === "Out of Stock") return meal.in_stock === false
+    if (filterOptions === "In Stock") return meal.in_stock === true
+  })
+
+  const uniqueMeals = [...new Set(filteredMeals.map(meal => meal.category))]  
 
   const handleCheckbox = (id: string) => {
     setCheckedMeals((prev) => prev.includes(id) ? prev.filter((mealId) => mealId !==id) : [...prev, id])
     setChecked(!checked)
   }
 
+  const handleSelect = (filter: string) => {
+    if (filter === "Select") {
+      setDialogVisible(false)
+    } else {
+    setFilterOptions(filter)
+    setDialogVisible(false)
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (!selectAll) {
+      filteredMeals.map((meal) => {
+        if (!checkedMeals.includes(meal.$id)) {
+          setCheckedMeals((prev) => [...prev, meal.$id])
+        }
+      })
+      setSelectAll(true)
+    } else {
+      setCheckedMeals([])
+      setSelectAll(false)
+    }
+  }
+
   const handleMarkInStock = async () => {
     
      await Promise.all(
-      meals.map(async (meal) => {
+      filteredMeals.map(async (meal) => {
         if (checkedMeals.includes(meal.$id)) {
           
           await upsertMeal({
@@ -56,7 +90,7 @@ const MealsScreen = () => {
   const handleMarkOutOfStock = async () => {
     
      await Promise.all(
-      meals.map(async (meal) => {
+      filteredMeals.map(async (meal) => {
         if (checkedMeals.includes(meal.$id)) {
           
           await upsertMeal({
@@ -75,10 +109,13 @@ const MealsScreen = () => {
     setCheckedMeals([])
   };
 
-  const hasInStockSelected = meals.some(
+  const hasInStockSelected = filteredMeals.some(
     (meal) => checkedMeals.includes(meal.$id) && meal.in_stock
   );
 
+  const hasOutOfStockSelected = filteredMeals.some(
+    (meal) => checkedMeals.includes(meal.$id) && !meal.in_stock
+  );
 
   useEffect(() => {
     fetchMeals()
@@ -89,14 +126,11 @@ const MealsScreen = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.instockGroup}>
-          <TouchableOpacity style={[styles.selectAll, styles.allStock]}>
-            <Text variant='titleSmall'>Select All</Text>
+          <TouchableOpacity style={[styles.selectAll, styles.allStock]} onPress={handleSelectAll}>
+            <Text variant='titleSmall'>{selectAll ? "Unselect All" : "Select All"}</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={[styles.selectAll, styles.inStock, checkedMeals.length === 0 &&  styles.hide]} onPress={handleMarkInStock}>
-            <Text variant='titleSmall' style={{color: "#fff"}}>Mark in stock</Text>
-          </TouchableOpacity> */}
 
-          {!hasInStockSelected && checkedMeals.length > 0 && (
+          {hasOutOfStockSelected && checkedMeals.length > 0 && (
             <TouchableOpacity style={[styles.selectAll, styles.inStock]} onPress={handleMarkInStock}>
             <Text variant='titleSmall' style={{color: "#fff"}}>Mark in stock</Text>
           </TouchableOpacity>
@@ -110,9 +144,9 @@ const MealsScreen = () => {
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity style={styles.filter}>
+        <TouchableOpacity style={styles.filter} onPress={() => setDialogVisible(true)}>
           <Ionicons name="filter-sharp" size={16} color="black" />
-          <Text variant='titleSmall'>All</Text>
+          <Text variant='titleSmall'>{filterOptions}</Text>
         </TouchableOpacity>
       </View>
 
@@ -132,7 +166,7 @@ const MealsScreen = () => {
             <View style={styles.accordion}>
               <TouchableOpacity style={{flexDirection: "row", gap: 2}}>
                 <Text variant='titleMedium' style={{fontWeight: "bold"}}>View All</Text>
-                <Text variant='titleMedium' style={{fontWeight: "bold", color: "green"}}>({meals.filter((q) => q.category === meal).length})</Text>
+                <Text variant='titleMedium' style={{fontWeight: "bold", color: "green"}}>({filteredMeals.filter((q) => q.category === meal).length})</Text>
               </TouchableOpacity>
               <List.Icon {...props} icon={props.isExpanded ? "chevron-up" : "chevron-down"} />
             </View>
@@ -140,7 +174,7 @@ const MealsScreen = () => {
           style={{backgroundColor: "#f1f1f1", borderTopWidth: 1, borderColor: "rgba(0,0,0,0.1)"}}
         > 
 
-        {meals.filter((m) => m.category === meal).map((k, i) => (
+        {filteredMeals.filter((m) => m.category === meal).map((k, i) => (
           <List.Item 
           key={i}
           title={
@@ -148,7 +182,7 @@ const MealsScreen = () => {
               <Text variant='titleMedium' style={{fontWeight: "bold"}}>{k.meal_name}</Text>
               <View style={styles.price}>
                 <Text variant='titleSmall'>₦{k.price}</Text>
-                <Text variant='titleSmall' style={styles.outOfStock}>{k.in_stock ? "in stock" : "out of stock"}</Text>
+                <Text variant='titleSmall' style={[styles.outOfStock, k.in_stock && styles.inStockBtn]}>{k.in_stock ? "In Stock" : "Out of Stock"}</Text>
               </View>
             </View>
           }
@@ -192,6 +226,13 @@ const MealsScreen = () => {
         customSize={70}
         onPress={() => router.push("/screens/Menu/AddMeal")}
       />
+
+      <FilterDialog 
+        filterOptions={optionList} 
+        dialogVisible={dialogVisible} 
+        onDismiss={() => setDialogVisible(false)}
+        onSelectFilter={handleSelect}
+        />
      
     </View>
   )
@@ -213,7 +254,9 @@ const styles = StyleSheet.create({
     marginBottom: 30
   },
   filter: {
-    flexDirection: "row"
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4
   },
   selectAll: {
     paddingVertical: 8,
@@ -253,6 +296,7 @@ const styles = StyleSheet.create({
   },
   price: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 14
   },
   textContainer: {
@@ -297,5 +341,11 @@ const styles = StyleSheet.create({
   },
   hide:{
     display: "none"
+  }, 
+  inStockBtn: {
+    backgroundColor: "green",
+    color: "#fff",
+    paddingVertical: 2,
+    paddingHorizontal: 4
   }
 })
