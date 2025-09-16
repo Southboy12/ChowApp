@@ -1,21 +1,26 @@
 // src/context/MealContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { Meals } from "@/components/database.type";
 import { DATABASE_ID, MEALS_ID, tablesDB } from "@/lib/appwrite";
-import { ID } from "react-native-appwrite";
-import { Meals } from "@/types/database.type";
 import { useAuth } from "@/lib/auth-context";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { ID } from "react-native-appwrite";
+
+
 
 export type FormData = {
+  $id?: string
   category: string;
-  mealName: string;
+  meal_name: string;
   description: string;
   image?: string;
   price: string;
-  priceDescription: string;
+  price_description: string;
   pack: string;
-  optionGroup?: string;
-  inStock: boolean;
+  option_group?: string;
+  in_stock: boolean;
 };
+
+// export type Meals = FormData & { id: string}
 
 type MealContextType = {
   meals: Meals[];
@@ -24,9 +29,9 @@ type MealContextType = {
   loading: boolean;
   error: string | null;
   setError: (error: string | null) => void;
+  setMeals: (meals: Meals[]) => void;
   fetchMeals: () => Promise<void>;
-  createMeal: (formData: FormData) => Promise<void>;
-  updateMeal: (formData: FormData) => Promise<void>;
+  upsertMeal: (formData: FormData) => Promise<Meals>;
   clearError: () => void;
 };
 
@@ -56,51 +61,49 @@ export const MealProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const createMeal = async (formData: FormData) => {
-
-    if (!user) return;
+  const upsertMeal = async (formData: FormData): Promise<Meals> => {
+    
+    if (!user) throw new Error("No user");
+    const rowId = formData.$id ?? ID.unique()
 
     setError(null)
 
     try {
       setLoading(true);
-      await tablesDB.createRow(DATABASE_ID, MEALS_ID, ID.unique(), {
+      const res = await tablesDB.upsertRow(DATABASE_ID, MEALS_ID, rowId, {
         user_id: user.$id,
         category: formData.category,
-        meal_name: formData.mealName,
+        meal_name: formData.meal_name,
         description: formData.description,
         image: formData.image,
         price: formData.price,
-        price_description: formData.priceDescription,
+        price_description: formData.price_description,
         pack: formData.pack,
-        option_group: formData.optionGroup,
-        in_stock: formData.inStock,
+        option_group: formData.option_group,
+        in_stock: formData.in_stock,
       });
+      
+      setMeals((prev) => {
+        const exists = prev.find((m) => m.$id === rowId);
+        if (exists) {
+            return prev.map((m) =>
+                m.$id === rowId ? (res as unknown as Meals) : m
+            );
+        } else {
+            return [...prev, res as unknown as Meals];
+        }
+      })
+
+      return res as unknown as Meals
 
     } catch (err) {
       console.error(err);
       setError("Error creating meal");
+      throw err;
     } finally {
       setLoading(false);
     }
   };
-
-  const updateMeal = async (formData: FormData) => {
-    if (!user) return;
-
-    try {
-        await tablesDB.upsertRow(
-            DATABASE_ID, 
-            MEALS_ID, 
-            ID.unique(),
-            {
-                formData
-            }
-        )
-    } catch (error) {
-        
-    }
-  }
 
   const clearError = () => setError(null);
 
@@ -116,11 +119,11 @@ export const MealProvider: React.FC<{ children: React.ReactNode }> = ({ children
         packs,
         loading,
         error,
+        setMeals,
         fetchMeals,
-        createMeal,
         clearError,
         setError,
-        updateMeal
+        upsertMeal
       }}
     >
       {children}

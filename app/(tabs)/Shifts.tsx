@@ -1,12 +1,12 @@
-import { View, StyleSheet, ScrollView } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Card, Text, useTheme, Button } from 'react-native-paper'
-import { Checkin } from '@/types/database.type'
+import { Checkin } from '@/components/database.type'
+import { CHECKIN_ID, client, DATABASE_ID, tablesDB } from '@/lib/appwrite'
 import { useAuth } from '@/lib/auth-context'
-import { DATABASE_ID, databases, CHECKIN_ID, tablesDB, client } from '@/lib/appwrite'
-import { ID, Query } from 'react-native-appwrite'
+import React, { useEffect, useState } from 'react'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import type { RealtimeResponseEvent } from 'react-native-appwrite'
+import { ID, Query } from 'react-native-appwrite'
+import { Button, Card, Text, useTheme } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 
 

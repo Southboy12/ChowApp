@@ -1,36 +1,33 @@
-import { StyleSheet, View, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Button, Switch, Text, TextInput } from 'react-native-paper';
 // import { TextInput as RNTextInput } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import AddCategory from '@/components/AddCategory';
+import AddShowOptionGroup from '@/components/AddOptionGroup';
+import AddPack from '@/components/AddPack';
+import CategoryDialog, { CategoryDialogProps } from '@/components/CategoryDialog';
+import CreateMealSnackbar from '@/components/CreateMealSnackbar';
+import PackDialog, { PackDialogProps } from '@/components/PackDialog';
+import { useAuth } from '@/lib/auth-context';
+import { useMeals } from '@/lib/meal-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { DATABASE_ID, MEALS_ID, tablesDB } from '@/lib/appwrite';
-import { ID, Query } from 'react-native-appwrite';
-import { Meals } from '@/types/database.type';
-import { useAuth } from '@/lib/auth-context';
-import AddCategory from '@/components/AddCategory';
-import AddPack from '@/components/AddPack';
-import AddShowOptionGroup from '@/components/AddOptionGroup';
-import CategoryDialog, {CategoryDialogProps} from '@/components/CategoryDialog';
-import PackDialog, { PackDialogProps } from '@/components/PackDialog';
-import CreateMealSnackbar from '@/components/CreateMealSnackbar';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from 'react-native-paper';
-import { useMeals } from '@/lib/meal-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 
 
 type FormData = {
   category: string;
-  mealName: string;
+  meal_name: string;
   description: string;
   image?: string;
   price: string;
-  priceDescription: string;
+  price_description: string;
   pack: string;
-  optionGroup?: string;
-  inStock: boolean;
+  option_group?: string;
+  in_stock: boolean;
 }
 
 const AddMeal = () => {
@@ -39,24 +36,24 @@ const AddMeal = () => {
   const [packDialogVisible, setPackDialogVisible] = useState<boolean>(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddPack, setShowAddPack] = useState(false);
-  const [showAddOptionGroup, setShowAddOptionGroup] = useState(false);
+  const [showAddoption_group, setShowAddoption_group] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false); 
   const [categories, setCategories] = useState<string[]>([])
   const [formData, setFormData] = useState<FormData>({
     category: "",
-    mealName: "",
+    meal_name: "",
     description: "",
     image: "",
     price: "",
-    priceDescription: "",
+    price_description: "",
     pack: "",
-    optionGroup: "",
-    inStock: false
+    option_group: "",
+    in_stock: false
   }); 
 
   // const inputRef = useRef<RNTextInput | null>(null)
   const { user } = useAuth()
-  const {createMeal, setError, error, meals, loading} = useMeals()
+  const {upsertMeal, setError, error, meals, loading} = useMeals()
   const theme = useTheme()
 
 
@@ -77,10 +74,10 @@ const AddMeal = () => {
 
     if (
         !formData.category || 
-        !formData.mealName || 
+        !formData.meal_name || 
         !formData.description || 
         !formData.price || 
-        !formData.priceDescription
+        !formData.price_description
     ) {
         setError("Please fill all fields")
         return;
@@ -88,7 +85,7 @@ const AddMeal = () => {
 
     setError(null)
     try {
-      createMeal(formData)
+      upsertMeal(formData)
       setShowSnackbar(true)
       clearInputs()
 
@@ -107,14 +104,14 @@ const AddMeal = () => {
     setFormData((prev: FormData) => ({ 
       ...prev, 
       category: "",
-      mealName: "",
+      meal_name: "",
       description: "",
       image: "",
       price: "",
-      priceDescription: "",
+      price_description: "",
       pack: "",
-      optionGroup: "",
-      inStock: false
+      option_group: "",
+      in_stock: false
     }))
     
   }
@@ -206,9 +203,9 @@ const AddMeal = () => {
             <TextInput 
               mode='flat' 
               placeholder="e.g. Yamarita" 
-              value={formData.mealName}
+              value={formData.meal_name}
               onChangeText={(text) =>  
-                setFormData((prev: FormData) => ({ ...prev, mealName: text})
+                setFormData((prev: FormData) => ({ ...prev, meal_name: text})
               )}
               style={styles.input}
             />
@@ -250,9 +247,9 @@ const AddMeal = () => {
               <TextInput 
                 mode='flat' 
                 placeholder="e.g. per portion" 
-                value={formData.priceDescription}
+                value={formData.price_description}
                 onChangeText={(text) =>  
-                  setFormData((prev: FormData) => ({ ...prev, priceDescription: text})
+                  setFormData((prev: FormData) => ({ ...prev, price_description: text})
                 )}
                 style={styles.input}
               />
@@ -307,16 +304,16 @@ const AddMeal = () => {
               caretHidden={true}
               showSoftInputOnFocus={false}
               right={<TextInput.Icon icon="chevron-up" />}
-              value={formData.optionGroup}
+              value={formData.option_group}
               onChangeText={(text) =>  
-                setFormData((prev: FormData) => ({ ...prev, mealName: text})
+                setFormData((prev: FormData) => ({ ...prev, meal_name: text})
               )}
               style={styles.input}
             />
           
-            <TouchableOpacity onPress={() => setShowAddOptionGroup(true)}> 
+            <TouchableOpacity onPress={() => setShowAddoption_group(true)}> 
               <Text style={styles.addCategory}>+ Add option group</Text>
-              {showAddOptionGroup && <AddShowOptionGroup visible={showAddOptionGroup} onClose={() => setShowAddOptionGroup(false)} />}
+              {showAddoption_group && <AddShowOptionGroup visible={showAddoption_group} onClose={() => setShowAddoption_group(false)} />}
             </TouchableOpacity>
           </View>
 
@@ -324,11 +321,11 @@ const AddMeal = () => {
           <View style={{flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 30}}>
             <Text variant='titleLarge' style={{fontWeight: "bold"}}>Mark Item in Stock</Text>
             <Switch
-              value={formData.inStock}
+              value={formData.in_stock}
               onValueChange={(newValue) => 
                 setFormData((prev) => ({
                   ...prev,
-                  inStock: newValue
+                  in_stock: newValue
                 }))
               }
             />

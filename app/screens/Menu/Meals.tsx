@@ -10,6 +10,7 @@ import { useTheme } from 'react-native-paper';
 
 
 
+
 const MealsScreen = () => {
 
   const [inStock, setInStock] = useState<boolean>(false)
@@ -17,7 +18,7 @@ const MealsScreen = () => {
   const [checkedMeals, setCheckedMeals] = useState<string[]>([])
 
 
-  const {updateMeal, fetchMeals, meals} = useMeals()
+  const {upsertMeal, fetchMeals, meals, setMeals} = useMeals()
 
   const router = useRouter()
   const { user } = useAuth()
@@ -30,13 +31,54 @@ const MealsScreen = () => {
     setChecked(!checked)
   }
 
-  const handleMarkInStock = (inStock: boolean) => {
+  const handleMarkInStock = async () => {
     
-    
+     await Promise.all(
+      meals.map(async (meal) => {
+        if (checkedMeals.includes(meal.$id)) {
+          
+          await upsertMeal({
+            ...meal,
+            $id: meal.$id,
+            in_stock: true
+          })
+          
+        }
+        
+      }
+      
+    ))
 
+    setInStock(true)
     setCheckedMeals([])
   }
-  
+
+  const handleMarkOutOfStock = async () => {
+    
+     await Promise.all(
+      meals.map(async (meal) => {
+        if (checkedMeals.includes(meal.$id)) {
+          
+          await upsertMeal({
+            ...meal,
+            $id: meal.$id,
+            in_stock: false
+          })
+          
+        }
+        
+      }
+      
+    ))
+
+    setInStock(false)
+    setCheckedMeals([])
+  };
+
+  const hasInStockSelected = meals.some(
+    (meal) => checkedMeals.includes(meal.$id) && meal.in_stock
+  );
+
 
   useEffect(() => {
     fetchMeals()
@@ -50,12 +92,23 @@ const MealsScreen = () => {
           <TouchableOpacity style={[styles.selectAll, styles.allStock]}>
             <Text variant='titleSmall'>Select All</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.selectAll, styles.inStock, checkedMeals.length === 0 &&  styles.hide]} onPress={() => {handleMarkInStock(true)}}>
+          {/* <TouchableOpacity style={[styles.selectAll, styles.inStock, checkedMeals.length === 0 &&  styles.hide]} onPress={handleMarkInStock}>
+            <Text variant='titleSmall' style={{color: "#fff"}}>Mark in stock</Text>
+          </TouchableOpacity> */}
+
+          {!hasInStockSelected && checkedMeals.length > 0 && (
+            <TouchableOpacity style={[styles.selectAll, styles.inStock]} onPress={handleMarkInStock}>
             <Text variant='titleSmall' style={{color: "#fff"}}>Mark in stock</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.selectAll, styles.outStock, styles.hide]}>
-            <Text variant='titleSmall' style={{color: "#fff"}}>Mark out of stock</Text>
-          </TouchableOpacity>
+          )}
+          {hasInStockSelected && (
+            <TouchableOpacity 
+              style={[styles.selectAll, styles.outStock]} 
+              onPress={handleMarkOutOfStock}  
+            >
+              <Text variant='titleSmall' style={{color: "#fff"}}>Mark out of stock</Text>
+            </TouchableOpacity>
+          )}
         </View>
         <TouchableOpacity style={styles.filter}>
           <Ionicons name="filter-sharp" size={16} color="black" />

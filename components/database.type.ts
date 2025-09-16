@@ -9,6 +9,7 @@ export interface Checkin extends Models.Row {
 }
 
 export interface Meals extends Models.Row {
+    id: string;
     user_id: string;
     category: string;
     meal_name: string;
