@@ -109,6 +109,14 @@ const MealsScreen = () => {
     setCheckedMeals([])
   };
 
+  const handleEditCategory = (category: string) => {
+    router.push("/Profile")
+  }
+
+  const handleEditMeal = (id: string) => {
+      router.push("/Profile")
+  }
+
   const hasInStockSelected = filteredMeals.some(
     (meal) => checkedMeals.includes(meal.$id) && meal.in_stock
   );
@@ -157,11 +165,20 @@ const MealsScreen = () => {
         <List.Accordion
           key={key}
           title={
-            <View style={styles.accordion}>
-              <Text variant='titleMedium' style={{fontWeight: "bold"}}>{meal}</Text> 
-              <Text variant='titleMedium' style={{fontWeight: "bold", color: "green"}}>Edit</Text>
-            </View>
+            <View></View>
           }
+          left={() => (
+            <View style={[styles.accordion, ]}>
+              <Text variant='titleMedium' style={{fontWeight: "bold"}}>{meal}</Text> 
+              <TouchableOpacity 
+                onPress={() => { 
+                  handleEditCategory(meal)
+                }}
+              >
+                <Text variant='titleMedium' style={{fontWeight: "bold", color: "green"}}>Edit</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           right={(props) => (
             <View style={styles.accordion}>
               <TouchableOpacity style={{flexDirection: "row", gap: 2}}>
@@ -194,9 +211,15 @@ const MealsScreen = () => {
           )}
           right={() => (
             <View style={styles.rightSide}>
-              <View style={styles.edit}>
+              <TouchableOpacity 
+                style={styles.edit}
+                onPress={() => router.push({
+                  pathname: "/screens/Menu/EditMeal",
+                  params: { updateMeal: JSON.stringify(k) }
+                })}  
+              >
                 <MaterialCommunityIcons name="square-edit-outline" size={14} color="green" />
-              </View>
+              </TouchableOpacity>
               <View>
                 <Checkbox 
                   status={checkedMeals.includes(k.$id) ? 'checked' : "unchecked"}

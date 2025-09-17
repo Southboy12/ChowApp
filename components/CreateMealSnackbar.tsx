@@ -5,10 +5,11 @@ import { Snackbar } from 'react-native-paper'
 
 export interface CreateSnackbarProps {
   visible: boolean;
-  onDismissSnackbar: () => void
+  onDismissSnackbar: () => void;
+  text: string
 } 
 
-const CreateMealSnackbar: React.FC<CreateSnackbarProps> = ({ visible, onDismissSnackbar }) => {
+const CreateMealSnackbar: React.FC<CreateSnackbarProps> = ({ visible, onDismissSnackbar, text }) => {
 
   return (
     <Snackbar
@@ -17,7 +18,7 @@ const CreateMealSnackbar: React.FC<CreateSnackbarProps> = ({ visible, onDismissS
       duration={2000}
       style={styles.snackbar}
     >
-      <Text variant="titleLarge" style={{ color: "green", textAlign: "center"}} >Meal created succesfully</Text>
+      <Text variant="titleLarge" style={{ color: "green", textAlign: "center"}} >{text}</Text>
     </Snackbar>
   )
 }

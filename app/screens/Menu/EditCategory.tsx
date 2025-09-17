@@ -30,7 +30,7 @@ type FormData = {
   in_stock: boolean;
 }
 
-const AddMeal = () => {
+const EditCategory = () => {
 
   const [dialogVisible, setDialogVisible] = useState<boolean>(false);
   const [packDialogVisible, setPackDialogVisible] = useState<boolean>(false);
@@ -85,10 +85,10 @@ const AddMeal = () => {
 
     setError(null)
     try {
-      await upsertMeal(formData)
+      upsertMeal(formData)
       setShowSnackbar(true)
       clearInputs()
-      
+
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message)
@@ -363,13 +363,13 @@ const AddMeal = () => {
       />
 
       {/* Snackbar */}
-      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Meal Created Successfully' />
+      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Category Update Successfully' />
       
     </SafeAreaView>
   )
 }
 
-export default AddMeal
+export default EditCategory
 
 const styles = StyleSheet.create({
   container: {

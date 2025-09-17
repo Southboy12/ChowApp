@@ -78,6 +78,15 @@ export default function RootLayout() {
                 }} 
               />
 
+              <Stack.Screen 
+                name="screens/Menu/EditMeal" 
+                
+                options={{ 
+                  headerShown: false,
+                
+                }} 
+              />
+
             </Stack>
           </RouteGuard>
           </MealProvider>

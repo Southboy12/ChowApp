@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
 
 
@@ -30,7 +31,10 @@ type FormData = {
   in_stock: boolean;
 }
 
-const AddMeal = () => {
+const EditCategory = () => {
+
+  const { updateMeal } = useLocalSearchParams<{updateMeal: string}>()
+  const mealData = updateMeal? JSON.parse(updateMeal) : null
 
   const [dialogVisible, setDialogVisible] = useState<boolean>(false);
   const [packDialogVisible, setPackDialogVisible] = useState<boolean>(false);
@@ -40,23 +44,21 @@ const AddMeal = () => {
   const [showSnackbar, setShowSnackbar] = useState(false); 
   const [categories, setCategories] = useState<string[]>([])
   const [formData, setFormData] = useState<FormData>({
-    category: "",
-    meal_name: "",
-    description: "",
-    image: "",
-    price: "",
-    price_description: "",
-    pack: "",
-    option_group: "",
-    in_stock: false
+    category: mealData?.category,
+    meal_name: mealData?.meal_name,
+    description: mealData?.description,
+    image: mealData?.image,
+    price: mealData?.price,
+    price_description: mealData?.price_description,
+    pack: mealData?.pack,
+    option_group: mealData?.option_group,
+    in_stock: mealData?.in_stock
   }); 
 
-  // const inputRef = useRef<RNTextInput | null>(null)
+  
   const { user } = useAuth()
   const {upsertMeal, setError, error, meals, loading} = useMeals()
   const theme = useTheme()
-
-
 
   useEffect(() => {
     
@@ -64,13 +66,9 @@ const AddMeal = () => {
     setCategories(uniqueCategories)
   },[user, meals])
 
-
-  
-
   const packs = [...new Set(meals.map(meal => meal.pack))]
-  
 
-  const handleCreateMeal = async () => {
+  const handleUpdateMeal = async () => {
 
     if (
         !formData.category || 
@@ -85,10 +83,14 @@ const AddMeal = () => {
 
     setError(null)
     try {
-      await upsertMeal(formData)
+      await upsertMeal({
+        $id: mealData.$id,
+        ...formData
+      })
+
       setShowSnackbar(true)
-      clearInputs()
-      
+      // clearInputs()
+
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message)
@@ -118,12 +120,10 @@ const AddMeal = () => {
 
   const handleCategoryDialogDismiss = () => {
     setDialogVisible(false);
-    // inputRef.current?.blur()
   }
 
   const handlePackDialogDismiss = () => {
     setPackDialogVisible(false);
-    // inputRef.current?.blur()
   }
 
   const handleSelectCategory: CategoryDialogProps["onSelectCategory"] = (category: string) => {
@@ -156,7 +156,7 @@ const AddMeal = () => {
             color="black"
           />
         </TouchableOpacity>
-        <Text style={styles.bold} variant='headlineSmall' >Add Meal</Text>
+        <Text style={styles.bold} variant='headlineSmall' >Edit Meal</Text>
       </View>
 
       <KeyboardAvoidingView
@@ -336,9 +336,9 @@ const AddMeal = () => {
             buttonColor='#0c513f'
             labelStyle={{fontSize: 18, paddingVertical: 8}}
             style={styles.button}
-            onPress={handleCreateMeal}
+            onPress={handleUpdateMeal}
           >
-            {loading ? "Loading..." : "Add menu"}
+            {loading ? "Loading..." : "Update meal"}
           </Button>
           {error && <Text variant='titleMedium' style={{ color: theme.colors.error }}>{error}</Text> }
         </ScrollView>
@@ -363,13 +363,13 @@ const AddMeal = () => {
       />
 
       {/* Snackbar */}
-      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Meal Created Successfully' />
+      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Meal Updated Successfully' />
       
     </SafeAreaView>
   )
 }
 
-export default AddMeal
+export default EditCategory
 
 const styles = StyleSheet.create({
   container: {
