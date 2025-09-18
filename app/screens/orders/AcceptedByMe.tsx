@@ -34,7 +34,7 @@ const AcceptedByMe = () => {
                     <Text variant='titleMedium' style={{ fontWeight: "bold"}}>#2500</Text>
                   </View>
                   
-                  <View style={styles.meal}>
+                  <View>
                     <Text variant='titleMedium' style={{ fontWeight: "bold"}}>Meat pie x3</Text>
                   </View>
                 </View>
