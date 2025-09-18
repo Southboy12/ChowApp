@@ -20,6 +20,7 @@ const MealsScreen = () => {
   const [selectAll, setSelectAll] = useState<boolean>(false)
   const [filterOptions, setFilterOptions] = useState<string>("All")
   const [dialogVisible, setDialogVisible] = useState<boolean>(false)
+  const [expanded, setExpanded] = useState<boolean>(false)
   
 
 
@@ -171,14 +172,16 @@ const MealsScreen = () => {
             <View style={[styles.accordion, ]}>
               <Text variant='titleMedium' style={{fontWeight: "bold"}}>{meal}</Text> 
               <TouchableOpacity 
-                onPress={() => { 
-                  handleEditCategory(meal)
-                }}
+                onPress={() => router.push({
+                  pathname: "/screens/Menu/EditMeal",
+                  params: {  }
+                })} 
               >
                 <Text variant='titleMedium' style={{fontWeight: "bold", color: "green"}}>Edit</Text>
               </TouchableOpacity>
             </View>
           )}
+          
           right={(props) => (
             <View style={styles.accordion}>
               <TouchableOpacity style={{flexDirection: "row", gap: 2}}>
