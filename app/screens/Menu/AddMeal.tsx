@@ -233,7 +233,7 @@ const AddMeal = () => {
               <Text variant='titleLarge'>Price</Text>
               <TextInput 
                 mode='flat' 
-                left={<TextInput.Icon icon="currency-ngn" />} 
+                placeholder='e.g. ₦3,000'
                 keyboardType='numeric'
                 value={formData.price}
                 onChangeText={(text) =>  

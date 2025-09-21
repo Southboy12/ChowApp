@@ -30,6 +30,14 @@ const MealsScreen = () => {
   const router = useRouter()
   const { user } = useAuth()
 
+  const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0
+  }).format(amount);
+};
+
   const filteredMeals = meals.filter((meal) => {
     if (filterOptions === "All") return true;
     if (filterOptions === "Out of Stock") return meal.in_stock === false
@@ -201,7 +209,7 @@ const MealsScreen = () => {
             <View style={styles.textContainer}>
               <Text variant='titleMedium' style={{fontWeight: "bold"}}>{k.meal_name}</Text>
               <View style={styles.price}>
-                <Text variant='titleSmall'>₦{k.price}</Text>
+                <Text variant='titleSmall'>{formatCurrency(Number(k.price))}</Text>
                 <Text variant='titleSmall' style={[styles.outOfStock, k.in_stock && styles.inStockBtn]}>{k.in_stock ? "In Stock" : "Out of Stock"}</Text>
               </View>
             </View>

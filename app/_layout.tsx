@@ -87,6 +87,15 @@ export default function RootLayout() {
                 }} 
               />
 
+              <Stack.Screen 
+                name="screens/orders/SelectOrder" 
+                
+                options={{ 
+                  headerShown: false,
+                
+                }} 
+              />
+
             </Stack>
           </RouteGuard>
           </MealProvider>
