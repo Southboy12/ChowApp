@@ -1,4 +1,4 @@
-import { StyleSheet, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, TouchableOpacity, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { Divider, Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -17,11 +17,12 @@ import ReviewOrder from '@/components/ReviewOrder';
 
 const SelectOrderScreen = () => {
 
-  const [filterOptions, setFilterOption] = useState<string>("All")
+  const [filterOptions, setFilterOptions] = useState<string>("All")
   const [selectedMeal, setSelectedMeal] = useState<Meals | null>(null)
-  const [orderPacks, setorderPacks] = useState<{meal: Meals, quantity: number}[]>([])
+  const [orderPacks, setOrderPacks] = useState<{ packIndex: number; items: { meal: Meals; quantity: number }[]}[]>([{ packIndex: 0, items: []}])
   const [showAddMealNumber, setShowAddMealNumber] = useState<boolean>(false)
   const [showReviewOrder, setShowReviewOrder] = useState<boolean>(false)
+  const [activePackIndex, setActivePackIndex] = useState<number>(0)
 
 
   const router = useRouter()
@@ -30,6 +31,7 @@ const SelectOrderScreen = () => {
   const { meals } = useMeals()
 
   const uniqueCategories = [...new Set(meals.map(meal => meal.category))]
+
 
   const proceedStyle = [
     styles.proceed,
@@ -51,8 +53,10 @@ const SelectOrderScreen = () => {
 
   filteredMeals.sort((a, b) => Number(b.in_stock) - Number(a.in_stock))
 
+  const hasOrder = orderPacks.some(pack => pack.items.length > 0 )
+
   const handleFilter = (filter: string) => {
-    setFilterOption(filter)
+    setFilterOptions(filter)
   }
 
   const handleSelectMeal = (meal: Meals) => {
@@ -60,27 +64,60 @@ const SelectOrderScreen = () => {
     setShowAddMealNumber(true)
   }
 
-  const handleAddSelectMeal = ({ meal, quantity}: {meal: Meals, quantity: number}) => {    
-    if (!meal) return;
+  const handleAddPack = () => {
+    
+    setActivePackIndex((prev) => prev + 1)
+    setShowReviewOrder(false)    
+  };
 
-    setorderPacks((prev) => {
+  const handleAddMealToPack = (packIndex: number, meal: Meals, quantity: number) => {    
+    if (!meal) return null;
+
+    setOrderPacks((prev) => {
+      if (prev.length === 0) return prev;
+
+      const lastPack = prev[prev.length - 1];
+
+      if (!lastPack.items || lastPack.items.length === 0) {
+        console.log("Please select a meal");
+        return prev
+      }
+
+      return [
+        ...prev,
+        { packIndex: prev.length, items: []}
+      ]
+    })
+
+    setOrderPacks((prev) => {
       // check if meal already exist
-      const exists = prev.find(item => item.meal.$id === meal.$id);
+      const packs = [...prev]
+
+      if (!packs[packIndex]) {
+
+      }
+      
+      const exists = prev[packIndex].items.find(item => item.meal.$id === meal.$id);
+      
       if (exists) {
-        // Update quantity
-        return prev.map(item => 
+        packs[packIndex].items = packs[packIndex].items.map((item) => (
           item.meal.$id === meal.$id
             ? { ...item, quantity: item.quantity + quantity}
             : item
-        )
+        ))
+      } else {
+        packs[packIndex].items = [
+          ...packs[packIndex].items,
+          { meal, quantity }
+        ]
       }
-
-      return [...prev, { meal: meal, quantity}]
+      
+      return packs;
     })
 
-    setShowAddMealNumber(false)
-    console.log(orderPacks.length);
+    console.log(orderPacks);
     
+    setShowAddMealNumber(false)    
   }
 
   const formatCurrency = (amount: number) => {
@@ -92,9 +129,23 @@ const SelectOrderScreen = () => {
 };
 
 
-  const totalQuantity = orderPacks.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = orderPacks.reduce((sum, item) => sum + (Number(item.meal.price) * item.quantity), 0)
-  
+  const totalQuantity = orderPacks.reduce((packAcc, pack) => {
+  return (
+    packAcc +
+    pack.items.reduce((mealAcc, m) => mealAcc + m.quantity, 0)
+  );
+}, 0);
+
+  const totalPrice = orderPacks.reduce((packAcc, pack) => {
+  return (
+    packAcc +
+    pack.items.reduce(
+      (itemAcc, item) => itemAcc + item.quantity * Number(item.meal.price),
+      0
+    )
+  );
+}, 0);
+
   
   
   return (
@@ -182,19 +233,24 @@ const SelectOrderScreen = () => {
 
       </View>
 
-      <TouchableOpacity 
-        style={[proceedStyle, orderPacks.length === 0 && styles.hidden]} 
+      {hasOrder && <TouchableOpacity 
+        style={[proceedStyle]} 
         onPress={() => setShowReviewOrder(true)}
       >
-        <Text variant='titleMedium' style={{ color: "#fff", fontWeight: "bold"}}>Proceed to order {totalQuantity} item{totalQuantity > 1 ? "s" : ""}</Text>
-        <Text variant='titleMedium' style={{ color: "#fff", fontWeight: "bold"}}>{formatCurrency(Number(totalPrice))}</Text>
-      </TouchableOpacity>
+        <Text variant='titleMedium' style={{ color: "#fff", fontWeight: "bold"}}>
+          Proceed to order {totalQuantity} item{totalQuantity > 1 ? "s" : ""}
+        </Text>
+        <Text variant='titleMedium' style={{ color: "#fff", fontWeight: "bold"}}>
+          {formatCurrency(Number(totalPrice))}
+        </Text>
+      </TouchableOpacity>}
 
       <AddMealNumber 
         visible={showAddMealNumber} 
         onClose={() => setShowAddMealNumber(false)} 
-        onAddMeal={handleAddSelectMeal}
+        onAddMeal={handleAddMealToPack}
         meal={selectedMeal}
+        packIndex={activePackIndex}
       />
 
       <ReviewOrder 
@@ -203,6 +259,7 @@ const SelectOrderScreen = () => {
         pack={orderPacks}
         totalPrice={totalPrice}
         totalQuantity={totalQuantity}
+        onAddPack={handleAddPack}
       />
 
     </SafeAreaView>

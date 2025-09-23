@@ -1,4 +1,4 @@
-import AddMealBottomSheet from '@/components/AddBottomSheet';
+import AddMealBottomSheet from '@/components/AddCategoryBottomShet';
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -9,26 +9,27 @@ import { Meals } from './database.type';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onAddMeal: (meal: {meal: Meals, quantity: number}) => void;
-  meal: Meals | null
+  onAddMeal: (packIndex: number, meal: Meals, quantity: number) => void;
+  meal: Meals | null;
+  packIndex: number
 }
 
 interface AddMealProps {
   list: string[]
 }
 
-const AddMealNumber: React.FC<Props> = ({ visible, onClose, onAddMeal, meal}) => {
+const AddMealNumber: React.FC<Props> = ({ visible, onClose, onAddMeal, meal, packIndex}) => {
 
   const [quantity, setQuantity] = useState<number>(1);
 
-  if (!meal) return;
+  if (!meal) return null;
 
   const add = () => setQuantity((prev) => prev + 1 )    
   
   const minus = () => setQuantity((prev) => (prev > 1 ? prev - 1 : prev) )  
 
   const handleAddToList = () => {
-    onAddMeal({ meal, quantity })
+    onAddMeal(packIndex, meal, quantity)
     onClose()
     setQuantity(1)
   }

@@ -1,4 +1,4 @@
-import AddCategoryBottomSheet from '@/components/AddBottomSheet';
+import AddCategoryBottomSheet from '@/components/AddCategoryBottomShet';
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Switch, Text, TextInput } from 'react-native-paper';
