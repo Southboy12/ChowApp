@@ -10,6 +10,10 @@ import { ScrollView } from 'react-native';
 import { tablesDB, DATABASE_ID, ORDER_ID, PACK_ID, PACKITEMS_ID, ITEMS_ID } from '@/lib/appwrite';
 import { ID } from 'react-native-appwrite';
 import { useAuth } from '@/lib/auth-context';
+// import Toast from 'react-native-toast-message'
+import { notify } from '@/lib/notify'
+
+
 
 
 interface Props {
@@ -33,17 +37,16 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
 
   const {user} = useAuth()
 
+  const serviceFee = 880;
+  const deliveryFee = 500;
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
       minimumFractionDigits: 0,
     }).format(amount);
-  };
-
-  // const add = () => setQuantity((prev) => prev + 1 )    
-  
-  // const minus = () => setQuantity((prev) => (prev > 1 ? prev - 1 : prev) )  
+  };  
 
   const handleSubmitOrder = async () => {
     if (!user) return
@@ -87,17 +90,26 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
       onResetOrder()
       onClose()
 
-      alert("Order placed successfully!")
+      // alert("Order placed successfully!")
+      notify({
+        type: 'success',
+        text1: 'Order placed 🎉',
+        text2: 'We are processing your order now',
+      })
+
     } catch (error) {
       console.error("Error saving order:", error);
-      alert("Something went wrong while placing order")
+      notify({
+        type: 'error',
+        text1: 'Failed to place order ❌',
+        text2: 'Please try again later',
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const serviceFee = 880;
-  const deliveryFee = 500;
+  
 
 
   return (
@@ -220,6 +232,7 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
         </Button>
         
       </View>
+      
     </ReviewOrderBottomSheet>
   )
 }

@@ -6,6 +6,7 @@ import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider as PaperProvider, DefaultTheme, Text } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from 'react-native-toast-message'
 
 
 
@@ -36,69 +37,70 @@ export default function RootLayout() {
       <GestureHandlerRootView>
         <SafeAreaProvider>
           <StatusBar backgroundColor="black" />
-            <MealProvider>
-          <RouteGuard>
-            <Stack>
-              <Stack.Screen
+          <MealProvider>
+            <RouteGuard>
+              <Stack>
+                <Stack.Screen
 
-               name="(tabs)" 
-               options={{ 
-                headerShown: false 
-                }} 
-              />
+                  name="(tabs)"
+                  options={{
+                    headerShown: false
+                  }}
+                />
 
-              <Stack.Screen 
-                name="Issues" 
-                options={{ 
-                  headerShown: true,
-                  title: "Order Issues",
-                 
-                  headerTitleStyle: {
-                    fontSize: 24,
-                  },
-                  headerStyle: {
-                    backgroundColor: "#fff",
-                  },                  
-               }} 
-              />
+                <Stack.Screen
+                  name="Issues"
+                  options={{
+                    headerShown: true,
+                    title: "Order Issues",
 
-              <Stack.Screen 
-                name="auth" 
-                options={{ 
-                  headerShown: false,
-                }} 
-              />
+                    headerTitleStyle: {
+                      fontSize: 24,
+                    },
+                    headerStyle: {
+                      backgroundColor: "#fff",
+                    },
+                  }}
+                />
 
-              <Stack.Screen 
-                name="screens/Menu/AddMeal" 
-                
-                options={{ 
-                  headerShown: false,
-                
-                }} 
-              />
+                <Stack.Screen
+                  name="auth"
+                  options={{
+                    headerShown: false,
+                  }}
+                />
 
-              <Stack.Screen 
-                name="screens/Menu/EditMeal" 
-                
-                options={{ 
-                  headerShown: false,
-                
-                }} 
-              />
+                <Stack.Screen
+                  name="screens/Menu/AddMeal"
 
-              <Stack.Screen 
-                name="screens/orders/SelectOrder" 
-                
-                options={{ 
-                  headerShown: false,
-                
-                }} 
-              />
+                  options={{
+                    headerShown: false,
 
-            </Stack>
-          </RouteGuard>
+                  }}
+                />
+
+                <Stack.Screen
+                  name="screens/Menu/EditMeal"
+
+                  options={{
+                    headerShown: false,
+
+                  }}
+                />
+
+                <Stack.Screen
+                  name="screens/orders/SelectOrder"
+
+                  options={{
+                    headerShown: false,
+
+                  }}
+                />
+
+              </Stack>
+            </RouteGuard>
           </MealProvider>
+          <Toast />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </AuthProvider>

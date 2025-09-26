@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message'
 
 
 
@@ -79,14 +80,31 @@ const AddMeal = () => {
         !formData.price || 
         !formData.price_description
     ) {
-        setError("Please fill all fields")
+        // setError("Please fill all fields")
+        Toast.show({
+          type: 'error',
+          text1: 'Please fill all fields',
+          text2: 'All fields are compulsory',
+          position: 'top',
+          text1Style: {fontSize: 18},
+          text2Style: {fontSize: 14}
+        })
         return;
     }
 
     setError(null)
     try {
       await upsertMeal(formData)
-      setShowSnackbar(true)
+
+      Toast.show({
+        type: 'success',
+        text1: 'Meal created 🎉',
+        text2: 'Your meal has been created',
+        position: 'top',
+        text1Style: {fontSize: 18},
+        text2Style: {fontSize: 14}
+      })
+
       clearInputs()
       
     } catch (error) {
@@ -363,7 +381,7 @@ const AddMeal = () => {
       />
 
       {/* Snackbar */}
-      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Meal Created Successfully' />
+      {/* <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Meal Created Successfully' /> */}
       
     </SafeAreaView>
   )

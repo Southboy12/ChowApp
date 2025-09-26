@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import Toast from 'react-native-toast-message'
 
 
 
@@ -86,12 +86,28 @@ const EditCategory = () => {
     setError(null)
     try {
       upsertMeal(formData)
-      setShowSnackbar(true)
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Meal updated',
+        text2: 'Your meal has been updated',
+        position: 'top',
+        text1Style: {fontSize: 18},
+        text2Style: {fontSize: 14}
+      })
+      
       clearInputs()
 
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message)
+        Toast.show({
+          type: 'error',
+          text1: 'Please fill all fields',
+          text2: `${error.message}`,
+          position: 'top',
+          text1Style: {fontSize: 18},
+          text2Style: {fontSize: 14}
+        })
         return;
       }
 
@@ -363,7 +379,7 @@ const EditCategory = () => {
       />
 
       {/* Snackbar */}
-      <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Category Update Successfully' />
+      {/* <CreateMealSnackbar visible={showSnackbar} onDismissSnackbar={() => setShowSnackbar(false)} text='Category Update Successfully' /> */}
       
     </SafeAreaView>
   )
