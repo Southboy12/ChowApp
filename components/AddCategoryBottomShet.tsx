@@ -10,7 +10,7 @@ import {
 interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const BottomSheet: React.FC<BottomSheetProps> = ({ visible, onClose, children }) => {

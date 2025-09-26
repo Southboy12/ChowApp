@@ -9,16 +9,15 @@ import { Meals } from './database.type';
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onAddMeal: (packIndex: number, meal: Meals, quantity: number) => void;
+  onAddMeal: (meal: Meals, quantity: number) => void;
   meal: Meals | null;
-  packIndex: number
 }
 
 interface AddMealProps {
   list: string[]
 }
 
-const AddMealNumber: React.FC<Props> = ({ visible, onClose, onAddMeal, meal, packIndex}) => {
+const AddMealNumber: React.FC<Props> = ({ visible, onClose, onAddMeal, meal}) => {
 
   const [quantity, setQuantity] = useState<number>(1);
 
@@ -29,7 +28,7 @@ const AddMealNumber: React.FC<Props> = ({ visible, onClose, onAddMeal, meal, pac
   const minus = () => setQuantity((prev) => (prev > 1 ? prev - 1 : prev) )  
 
   const handleAddToList = () => {
-    onAddMeal(packIndex, meal, quantity)
+    onAddMeal(meal, quantity)
     onClose()
     setQuantity(1)
   }

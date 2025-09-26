@@ -1,12 +1,15 @@
 import ReviewOrderBottomSheet from '@/components/AddCategoryBottomShet';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React from 'react';
+import React, { useState } from 'react';
 import { TouchableOpacity, StyleSheet, View, Pressable } from 'react-native';
 import { Button, Divider, Text } from 'react-native-paper';
 import { Meals } from './database.type';
 // import { ScrollView } from 'react-native-gesture-handler';
 import { ScrollView } from 'react-native';
+import { tablesDB, DATABASE_ID, ORDER_ID, PACK_ID, PACKITEMS_ID, ITEMS_ID } from '@/lib/appwrite';
+import { ID } from 'react-native-appwrite';
+import { useAuth } from '@/lib/auth-context';
 
 
 interface Props {
@@ -15,10 +18,20 @@ interface Props {
   pack: {packIndex: number; items: {meal: Meals, quantity: number}[]}[];
   totalPrice: number;
   totalQuantity: number;
-  onAddPack: () => void
+  onAddPack: () => void;
+  resetPackIndex: () => void;
+  onUpdateQuantity: (packIndex: number, mealId: string, newQuantity: number) => void;
+  onResetOrder: () => void;
+  onDelete: (packIndex: number) => void
 }
 
-const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, totalQuantity, onAddPack}) => {
+const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, totalQuantity, onAddPack, resetPackIndex, onUpdateQuantity, onResetOrder, onDelete}) => {
+
+  const [error, setError] = useState<string>("")
+  const [loading, setLoading] = useState<boolean>(false)
+
+
+  const {user} = useAuth()
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -27,6 +40,61 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  // const add = () => setQuantity((prev) => prev + 1 )    
+  
+  // const minus = () => setQuantity((prev) => (prev > 1 ? prev - 1 : prev) )  
+
+  const handleSubmitOrder = async () => {
+    if (!user) return
+    setLoading(true)
+    try {
+      const order = await tablesDB.createRow({
+        databaseId: DATABASE_ID,
+        tableId: ORDER_ID,
+        rowId: ID.unique(),
+        data: {
+          user_id: user.$id,
+          status: "pending",
+        }
+    })
+
+      for (const p of pack) {
+      const savedPack = await tablesDB.createRow({
+        databaseId: DATABASE_ID,
+        tableId: PACK_ID,
+        rowId: ID.unique(),
+        data: {
+          order_id: order.$id,
+          pack_number: p.packIndex + 1
+        }}
+        )
+
+        for (const item of p.items) {
+          await tablesDB.createRow({
+            databaseId: DATABASE_ID,
+            tableId: PACKITEMS_ID,
+            rowId: ID.unique(),
+            data: {
+              pack_id: savedPack.$id,
+              item_id: item.meal.$id,
+              quantity: item.quantity
+            }
+        })
+        }
+      }
+
+      onResetOrder()
+      onClose()
+
+      alert("Order placed successfully!")
+    } catch (error) {
+      console.error("Error saving order:", error);
+      alert("Something went wrong while placing order")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const serviceFee = 880;
   const deliveryFee = 500;
@@ -48,7 +116,7 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
           <View key={packKey}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 30 }}>
               <Text variant='titleMedium' style={{fontWeight: "bold"}}>Pack {packItem.packIndex + 1}</Text>
-              <MaterialIcons name="delete-outline" size={20} color="red" />
+              <MaterialIcons onPress={() => onDelete(packItem.packIndex)} name="delete-outline" size={20} color="red" />
             </View>
 
             <View style={[{backgroundColor: "#f1f1f1", padding: 20, borderRadius: 10, gap: 15, marginBottom: 20}, styles.hidden]}>
@@ -71,9 +139,19 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
                     </View>
                   </View>
                   <View style={{flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between",backgroundColor: "#f1f1f1", paddingVertical: 6, paddingHorizontal: 10, borderRadius: 20}}>
-                    <Text variant='headlineMedium' style={{fontWeight: "bold"}}>-</Text>
-                    <Text variant='titleMedium' style={{fontWeight: "bold"}}>{orderItem.quantity}</Text>
-                    <Text variant='headlineSmall' style={{fontWeight: "bold"}}>+</Text>
+                    <TouchableOpacity 
+                      onPress={() => onUpdateQuantity(packItem.packIndex, orderItem.meal.$id, orderItem.quantity - 1)}
+                      style={{ padding: 8 }}
+                    >
+                      <Text variant='titleSmall'>-</Text>
+                    </TouchableOpacity>
+                    <Text variant='titleMedium'>{orderItem.quantity}</Text>
+                    <TouchableOpacity 
+                      onPress={() => onUpdateQuantity(packItem.packIndex, orderItem.meal.$id, orderItem.quantity + 1)}
+                      style={{ paddingHorizontal: 8}}  
+                    >
+                      <Text variant='titleSmall'>+</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               ))}
@@ -84,38 +162,9 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
         ))}
         </ScrollView>
 
-        
-        {/* <TouchableOpacity 
-          onPress={() => {
-            console.log("Touch clicked");
-            
-            onAddPack}}> */}
-          {/* <Button
-            mode='contained' 
-            icon="plus" 
-            compact 
-            style={{
-              alignSelf: "flex-start", 
-              paddingHorizontal: 20, 
-              marginBottom: 80
-            }} 
-            buttonColor='#E6F4EA' 
-            textColor='#0c513f' 
-            labelStyle={{fontWeight: "bold"}}
-            onPress={() => {
-            console.log("Touch clicked");
-            
-            onAddPack}}
-          >
-            Add Another Pack
-          </Button> */}
-        {/* </TouchableOpacity> */}
-
-        // Replace the Button component with this TouchableOpacity component
         <Pressable
           onPress={() => {
-            console.log("Touch clicked");
-            onAddPack(); // Make sure this is still correct
+            onAddPack();
           }}
           style={({ pressed }) => [
             {
@@ -124,7 +173,7 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
               paddingHorizontal: 20,
               marginBottom: 80,
               borderRadius: 20,
-              backgroundColor: pressed ? '#d0e0d5' : '#E6F4EA', // Example for feedback
+              backgroundColor: pressed ? '#d0e0d5' : '#E6F4EA',
             },
           ]}
         >
@@ -155,7 +204,20 @@ const ReviewOrder: React.FC<Props> = ({ visible, onClose, pack, totalPrice, tota
           </View>
         </View>
 
-        <Button mode='contained' buttonColor='#0c513f' style={{marginTop: 30, paddingVertical: 8, borderRadius: 10}}>Place order</Button>
+        <Button 
+          mode='contained' 
+          buttonColor='#0c513f' 
+          style={{
+            marginTop: 30, 
+            paddingVertical: 8, 
+            borderRadius: 10
+          }}
+          loading={loading}
+          disabled={loading}
+          onPress={handleSubmitOrder}
+        >
+          Place order
+        </Button>
         
       </View>
     </ReviewOrderBottomSheet>

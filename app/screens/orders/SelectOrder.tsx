@@ -37,11 +37,6 @@ const SelectOrderScreen = () => {
     styles.proceed,
   ]
 
-  // useEffect(() => {
-  //   console.log("orderPacks changed. Current items:", orderPacks.length, orderPacks);
-    
-  // }, [orderPacks])
-
   const filteredMeals = meals.filter((meal) => {
     if (filterOptions === "All") return true;
     if (filterOptions === "Main Meals") return meal.category === "Main Meals"
@@ -59,66 +54,94 @@ const SelectOrderScreen = () => {
     setFilterOptions(filter)
   }
 
+  const resetOrder = () => {
+    setOrderPacks([{ packIndex: 0, items: [] }])
+    setActivePackIndex(0)
+  }
+
   const handleSelectMeal = (meal: Meals) => {
     setSelectedMeal(meal)
     setShowAddMealNumber(true)
   }
 
   const handleAddPack = () => {
-    
+    setOrderPacks(prev => [
+      ...prev,
+      { packIndex: prev.length, items: []}
+    ])
     setActivePackIndex((prev) => prev + 1)
     setShowReviewOrder(false)    
   };
 
-  const handleAddMealToPack = (packIndex: number, meal: Meals, quantity: number) => {    
-    if (!meal) return null;
+  const updateQuantity = (packIndex: number, mealId: string, newQuantity: number) => {
+    setOrderPacks(prev => {
+      const packs = [...prev]
 
-    setOrderPacks((prev) => {
-      if (prev.length === 0) return prev;
+      if (!packs[packIndex]) return prev;
 
-      const lastPack = prev[prev.length - 1];
+      packs[packIndex].items = packs[packIndex].items.map(item =>
+        item.meal.$id === mealId
+          ? { ...item, quantity: Math.max(1, newQuantity) }
+          : item
+      )
 
-      if (!lastPack.items || lastPack.items.length === 0) {
-        console.log("Please select a meal");
-        return prev
-      }
-
-      return [
-        ...prev,
-        { packIndex: prev.length, items: []}
-      ]
+      return packs;
     })
+  }
+
+  const handleAddMealToPack = (meal: Meals, quantity: number) => {    
+    if (!meal) return null;
 
     setOrderPacks((prev) => {
       // check if meal already exist
       const packs = [...prev]
 
-      if (!packs[packIndex]) {
-
+      if (!packs[activePackIndex]) {
+        packs.push({ packIndex: packs.length, items: [] })
       }
       
-      const exists = prev[packIndex].items.find(item => item.meal.$id === meal.$id);
+      const exists = packs[activePackIndex].items.find(item => item.meal.$id === meal.$id);
       
       if (exists) {
-        packs[packIndex].items = packs[packIndex].items.map((item) => (
+        packs[activePackIndex].items = packs[activePackIndex].items.map((item) => (
           item.meal.$id === meal.$id
             ? { ...item, quantity: item.quantity + quantity}
             : item
         ))
       } else {
-        packs[packIndex].items = [
-          ...packs[packIndex].items,
+        packs[activePackIndex].items = [
+          ...packs[activePackIndex].items,
           { meal, quantity }
         ]
       }
       
-      return packs;
+      return packs.map((p, idex) => ({ ...p, packIndex: idex}));
     })
-
-    console.log(orderPacks);
     
     setShowAddMealNumber(false)    
   }
+
+  const handleDeletePack = (packIndex: number) => {
+    setOrderPacks((prev) => {
+      const updated = prev
+        .filter((p) => p.packIndex !== packIndex)  
+        .map((p, idx) => ({ ...p, packIndex: idx })); 
+
+      if (updated.length === 0) {
+        return [{ packIndex: 0, items: [] }];
+      }
+
+      return updated;
+    });
+
+    setActivePackIndex((prev) => {
+      if (prev >= orderPacks.length - 1) {
+        return Math.max(orderPacks.length - 2, 0);
+      }
+      return prev;
+    });
+  };
+
 
   const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-NG", {
@@ -250,7 +273,7 @@ const SelectOrderScreen = () => {
         onClose={() => setShowAddMealNumber(false)} 
         onAddMeal={handleAddMealToPack}
         meal={selectedMeal}
-        packIndex={activePackIndex}
+        // packIndex={activePackIndex}
       />
 
       <ReviewOrder 
@@ -260,6 +283,10 @@ const SelectOrderScreen = () => {
         totalPrice={totalPrice}
         totalQuantity={totalQuantity}
         onAddPack={handleAddPack}
+        resetPackIndex={() => setActivePackIndex(0)}
+        onUpdateQuantity={updateQuantity}
+        onResetOrder={resetOrder}
+        onDelete= {handleDeletePack}
       />
 
     </SafeAreaView>
